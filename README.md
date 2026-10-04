@@ -1,0 +1,212 @@
+<!-- markdownlint-disable MD033 MD036 MD041 -->
+
+<div align="center">
+
+# QQ 空间 Api 封装
+
+_✨ 电脑网页版空间API的简洁易用封装 ✨_
+
+</div>
+
+<p align="center">
+  <a href="https://github.com/HuanXinToolkit/qq_zone_api/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/HuanXinToolkit/qq_zone_api.svg" alt="license">
+  </a>
+  <a href="https://pypi.python.org/pypi/qzone-api">
+    <img src="https://img.shields.io/pypi/v/qzone-api" alt="pypi">
+  </a>
+  <img src="https://img.shields.io/badge/python-3.8+-blue.svg" alt="python">
+  <a href="https://github.com/HuanXinToolkit/qq_zone_api/issues">
+    <img src="https://img.shields.io/github/issues/HuanXinToolkit/qq_zone_api" alt="issues">
+  </a>
+  <a href="https://github.com/HuanXinToolkit/qq_zone_api/stargazers">
+    <img src="https://img.shields.io/github/stars/HuanXinToolkit/qq_zone_api.svg" alt="stars">
+  </a>
+  <a href="https://github.com/HuanXinToolkit/qq_zone_api/network/members">
+    <img src="https://img.shields.io/github/forks/HuanXinToolkit/qq_zone_api.svg" alt="forks">
+  </a>
+</p>
+
+## 📝 介绍
+
+QZone-API 是一个专注于QQ空间操作的轻量级Python异步API封装库，让你能够像官方一样操作QQ空间，而无需繁琐的请求处理和参数构建。基于网页版QQ空间协议开发，支持二维码登录，操作简单便捷。
+
+## ✨ 特性
+
+- **异步支持**: 基于`aiohttp`实现的全异步API调用
+- **完整封装**: 常用QQ空间操作简单几行代码即可实现
+- **二维码登录**: 便捷的二维码登录机制，无需手动处理复杂的登录流程
+- **丰富功能**: 覆盖绝大部分常用QQ空间操作
+
+## 🔧 安装
+
+```bash
+pip install qzone-api
+```
+
+## 🛠 功能列表
+
+- ✅ 二维码登录
+- ✅ 获取指定QQ的动态
+- ✅ 获取好友空间动态
+- ✅ 点赞指定动态
+- ✅ 发表评论(文本)
+- ✅ 发送文本说说
+- ✅ 删除指定说说
+- ✅ 转发说说
+- ✅ 上传图片
+- ✅ 发表图片/图文说说
+- ✅ 发表图文混合评论
+- ✅ 回复评论
+- ✅ 获取相册列表（自己的 / 对方公开的）
+- ✅ 获取相册内图片列表
+- ✅ 删除自己相册里的图片
+- ✅ 编辑已发说说
+- ✅ 选择说说可见范围（私密模式，含指定某人可见 / 不可见）
+- ✅ 说说内 @某人
+- ✅ 评论点赞
+- ✅ 删除评论 / 删除回复
+- ✅ 留言板：读取 / 发表 / 删除
+- ✅ 获取空间访客
+- ✅ 日志：列表 / 发表 / 编辑 / 删除
+
+## 📚 快速开始
+
+```python
+import asyncio
+from qzone_api import QzoneApi, QzoneLogin
+
+async def main():
+    # 登录QQ空间
+    qzone_login = QzoneLogin()
+    login_result = await qzone_login.login()
+    
+    if login_result["code"] == 0:
+        print(f"登录成功! QQ: {login_result['qq']}")
+        
+        # 获取cookies和g_tk等参数
+        cookies = login_result["cookies"]
+        cookies_str = '; '.join([f"{k}={v}" for k, v in cookies.items()])
+        skey = login_result["skey"]
+        bkn = login_result["bkn"]
+        #:请在这里自行管理你的cookies和g_tk等参数
+        #TODO：
+        # 模块不会存储登录cookies，请自行管理
+
+        # 实例化API
+        qzone = QzoneApi()
+        
+        # 获取说说列表
+        messages = await qzone.get_messages_list(
+            target_qq=int(login_result["qq"]),
+            g_tk=bkn,
+            cookies=cookies_str
+        )
+        
+        if messages:
+            print(f"成功获取{len(messages)}条说说")
+            
+            # 发送一条新说说
+            await qzone.publish_message(
+                target_qq=int(login_result["qq"]),
+                content="Hello QZone-API! 这是通过API发送的说说~",
+                cookies=cookies_str,
+                g_tk=bkn
+            )
+            print("发送说说成功!")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+## 📖 API 方法一览
+
+| 方法 | 说明 | 旧版本兼容别名 |
+| --- | --- | --- |
+| `get_messages_list` | 获取指定QQ的说说列表（解析后，支持 `begintime` 分页） | - |
+| `fetch_messages_raw` | 获取说说列表原始响应 | `_get_messages_list` |
+| `get_friend_feeds` | 获取好友动态（解析后） | - |
+| `fetch_friend_feeds_raw` | 获取好友动态原始响应 | `_get_zone` |
+| `like_feed` | 点赞说说 | `_zanzone` |
+| `publish_message` | 发表文本说说 | `_send_zone` |
+| `comment_message` | 评论说说 | `_send_comments` |
+| `forward_message` | 转发说说 | `_forward_zone` |
+| `delete_message` | 删除说说 | `_del_zone` |
+| `upload_image` | 上传图片到相册 | - |
+| `publish_image_message` | 发表图片/图文说说 | - |
+| `comment_message_with_images` | 发表评论（纯文字/图文混合） | - |
+| `reply_comment` | 回复评论 | - |
+| `list_albums` | 获取相册列表（自己的/对方公开的） | - |
+| `list_album_photos` | 获取相册内图片列表 | - |
+| `delete_photo` | 删除自己相册里的图片 | - |
+| `edit_message` | 编辑已发说说（可改可见范围，用 p_skey 版 g_tk） | - |
+| `like_comment` | 给说说下的评论点赞 | - |
+| `delete_comment` | 删除说说下的评论 | - |
+| `delete_reply` | 删除评论下的回复 | - |
+| `get_message_board` | 读取留言板留言列表 | - |
+| `post_message_board` | 发表留言 | - |
+| `delete_message_board` | 删除留言 | - |
+| `get_visitors` | 获取自己空间的访客列表 | - |
+| `list_blogs` | 获取日志列表 | - |
+| `publish_blog` | 发表日志 | - |
+| `edit_blog` | 编辑已发日志 | - |
+| `delete_blog` | 删除日志 | - |
+
+工具：`format_mention(qq, nick)` 生成 @某人的标记；`publish_message` / `edit_message` 的 `ugc_right` 控制可见范围，可用常量 `UGC_RIGHT_ALL / UGC_RIGHT_FRIEND / UGC_RIGHT_PART / UGC_RIGHT_SELF / UGC_RIGHT_EXCLUDE`。
+
+> `edit_message`、留言板、访客、日志、相册接口的 `g_tk` 都要用 `p_skey` 计算。
+
+详细的调用示例见 [example.md](example.md)，各版本的改动记录见 [changes.md](changes.md)。
+
+## 🗓 历史更新记录
+
+完整的版本改动说明见 [changes.md](changes.md)
+
+## 🧩 项目结构
+
+- **login/**: 处理QQ空间登录、二维码生成及cookie管理
+- **api/**: 封装各种QQ空间API操作接口
+  - **api_base.py**: 基础请求方法
+  - **api_zone.py**: 空间动态相关API
+  - **api_feed.py**: 动态操作相关API
+  - **api_parms.py**: API请求参数构建
+- **utils/**: 工具函数，包括HTML解析、token生成等
+
+## 🙋 常见问题
+
+### Q: 登录时提示"二维码已失效"怎么办?
+
+A: 二维码有效期较短，请重新执行登录方法获取新的二维码。
+
+### Q: 如何获取其他用户的说说?
+
+A: 使用`get_messages_list`方法，将`target_qq`参数设置为目标用户的QQ号。
+
+### Q: 是否支持发送图片说说?
+
+A: 支持。先用 `upload_image` 上传图片，拿到返回的 `data` 后调用 `publish_image_message` 发表纯图片或图文说说；图文评论用 `comment_message_with_images`。注意上传图片与图文评论所需的 `g_tk` 需用 `p_skey` 计算（`bkn(cookies['p_skey'])`）。
+
+### Q: 相册相关接口怎么用?
+
+A: `list_albums` 拿相册列表，`list_album_photos` 拿某个相册里的图片，`delete_photo` 删自己相册里的图片（只能删当前登录账号名下的）。这三个接口的 `g_tk` 同样要用 `p_skey` 计算。示例见下方「相册接口示例」和 [example.md](example.md)。
+
+## 📋 贡献指南
+
+欢迎为项目提交PR、Issue或建议!
+
+1. Fork 本仓库
+2. 创建你的特性分支 (`git checkout -b feature/amazing-feature`)
+3. 提交你的更改 (`git commit -m 'Add some amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
+5. 打开一个 Pull Request
+
+## 📜 开源协议
+
+本项目使用 MIT 协议，请查看 [LICENSE](https://github.com/HuanXinToolkit/qq_zone_api/blob/main/LICENSE) 文件了解更多信息。
+
+## 🔗 联系方式
+
+有问题? 请[提交Issue](https://github.com/HuanXinToolkit/qq_zone_api/issues)或联系我:
+
+- 邮箱: <mailto:mc.xiaolang@foxmail.com>
+- 个人网站: [https://blog.huanxinbot.com/](https://blog.huanxinbot.com/)
