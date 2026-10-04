@@ -1,5 +1,9 @@
 # 更新说明
 
+## 1.1.1
+
+仓库迁移至 https://github.com/HuanXinToolkit/qq_zone_api，功能无变更。
+
 ## 1.1.0
 
 补齐说说编辑、评论管理、留言板、访客、日志
